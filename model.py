@@ -1,4 +1,6 @@
 import numpy as np
+import json
+import pickle
 
 class layer():
     def __init__(self, n):
@@ -25,6 +27,9 @@ class dense(layer):
     def compute(self, input) -> np.ndarray:
         computed = np.sum(input*self.weights, axis=1)
         return computed
+    
+    def to_json(self):
+        return json.dumps(self)
 
 class model:
     def __init__(self, layers=[]):
@@ -43,13 +48,20 @@ class model:
         for i in range(len(self.layers)-1):
             self.layers[i+1].compile(n_before=self.layers[i].n)
 
-    
+    def save(self, name='save'):
+        with open(str(name)+'.pkl', 'wb') as save_file:
+            pickle.dump(self, save_file)
+
+def load_model(name='save'):
+    with open(str(name)+'.pkl', 'rb') as load_file:
+        return pickle.load(load_file)
+
 Model=model()
-Model.layers=[layer(3), dense(4), dense(3)]
+Model.layers=[layer(3), dense(4)]
 
 Model.compile()
 
-Dense = dense(4)
-Dense.compile(3)
-
+print(Model)
 print(Model.compute(np.array([1,2,3])))
+
+Model.save()
