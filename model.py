@@ -1,6 +1,10 @@
 import numpy as np
 import json
 import pickle
+import math
+
+def sigmoid(x):
+  return 1 / (1 + np.exp(-x))
 
 class layer():
     def __init__(self, n):
@@ -16,17 +20,18 @@ class layer():
         return input
 
 class dense(layer):
-    def compile(self, n_before : int):
+    def compile(self, n_before : int, activation_func=sigmoid):
         '''
         n_before the size of input or the size of output of previous layer
         function sets weights and biases for this layer''' 
         self.n_before = n_before
         self.weights = (np.ones(self.n*n_before)/4).reshape((self.n, n_before))
         self.biases = np.ones(self.n)/10
+        self.activation_func = activation_func
     
     def compute(self, input) -> np.ndarray:
-        computed = np.sum(input*self.weights, axis=1)
-        return computed
+        computed = np.sum(input*self.weights, axis=1) + self.biases
+        return self.activation_func(computed)
     
     def to_json(self):
         return json.dumps(self)
