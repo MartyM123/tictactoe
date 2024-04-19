@@ -10,6 +10,7 @@ def isFull(board):
     return False
 
 def isWinner(board):
+    board=board.reshape((3,3))
     n=3
     res=(np.sum(board,axis=0), np.sum(board,axis=1), np.trace(board), np.trace(board[::-1]))
     res=np.hstack(res)

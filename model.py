@@ -9,7 +9,8 @@ def sigmoid(x):
 def plain(x):
     return x
 
-def add_random_n_places(a, n):
+def add_random_n_places(a : np.ndarray, n : int) -> np.ndarray:
+    '''add random values to random n elements'''
     out = a.astype(float)
 
     # Generate unique flattened indices along the size of a
@@ -17,6 +18,13 @@ def add_random_n_places(a, n):
     # Assign into those places ramdom numbers in [-1,1)
     out.flat[idx] += np.random.uniform(low=-1, high=1, size=n)
     return out
+
+def get_max_exc(a : np.ndarray, exc=[]) -> int:
+    '''return index of max element except indecies in exc:list'''
+    m = np.zeros(a.size, dtype=bool)
+    m[exc] = True
+    b = np.ma.array(a, mask=m)
+    return int(np.argmax(b))
 
 class layer():
     def __init__(self, n):
@@ -41,7 +49,7 @@ class dense(layer):
         function sets weights and biases for this layer''' 
         self.n_before = n_before
         self.weights = np.zeros((self.n, n_before))
-        self.biases = np.zeros(self.n)
+        self.biases = np.random.rand(self.n)/10
         self.activation_func = activation_func
     
     def compute(self, input) -> np.ndarray:
@@ -54,8 +62,6 @@ class dense(layer):
     def mutate(self):
         '''mutation of weights'''
         self.weights = add_random_n_places(self.weights, 5)
-
-
 class model:
     def __init__(self, layers=[]):
         self.layers=layers
@@ -81,15 +87,76 @@ class model:
         for layer in self.layers:
             layer.mutate()
 
-def load_model(name='save'):
+def load_model(name='save') -> model:
     with open(str(name)+'.pkl', 'rb') as load_file:
         return pickle.load(load_file)
 
-Model=model()
-Model.layers=[layer(9), dense(9)]
+def is_full(board:np.ndarray)->bool:
+    if 0 not in board:
+        return True
+    return False
 
-Model.compile()
+def is_winner(board:np.ndarray)->bool:
+    n=3
+    board=np.reshape(board,(n,n))
+    res=(np.sum(board,axis=0), np.sum(board,axis=1), np.trace(board), np.trace(board[::-1]))
+    res=np.hstack(res)
+    if n in res or -n in res:
+        return True
+    return False
 
-print(Model.compute(np.array([1,0,1,0,-1,-1,-1,0,1])))
-Model.mutate()
-print(Model.compute(np.array([1,0,1,0,-1,-1,-1,0,1])))
+def is_legal(board:np.ndarray, i:int):
+    '''Check if move to i index is legal on board'''
+    if board[i]==0:
+        return True
+    return False
+
+def execute(board:np.ndarray, prediction:np.ndarray)->np.ndarray:
+    '''play the most popular (based on predicton) legal move and return the board after the play'''
+    exc=[]
+    while True:
+        request=get_max_exc(prediction, exc)
+        if is_legal(board, request):
+            board[request]+=1
+            return board
+        else:
+            exc.append(request)
+
+def fight(model1:model, model2:model, show=False)->list:
+    '''returns who won the match
+            first won: [1,0]
+            second won: [0,1]
+            tie: [0,0]'''
+    board = np.zeros(9)
+    flip=1
+    while True:
+        #first model is 1 second is -1 empty tile is 0
+        for m in [model1, model2]:
+            prediction=m.compute(board)
+            board = execute(board, prediction)
+            if is_winner(board):
+                if flip==1:
+                    if show: print(board.reshape((3,3))*flip)
+                    return [1,0]
+                if show: print(board.reshape((3,3))*flip)
+                return [0,1]
+            elif is_full(board):
+                #tie
+                if show: print(board.reshape((3,3))*flip)
+                return [0,0]
+            #flip the board
+            board*=-1
+            flip*=-1
+
+model1 = model()
+model1.layers = [layer(9), dense(9)]
+model1.compile()
+model1.mutate()
+
+model2 = model()
+model2.layers = [layer(9), dense(9)]
+model2.compile()
+model2.mutate()
+
+print(fight(model1, model2, True))
+print()
