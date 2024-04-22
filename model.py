@@ -32,7 +32,7 @@ class random_model:
         self.n = n
     def __str__(self) -> str:
         return f'random_model with {self.n} nodes'
-    def compute(self):
+    def compute(self, *args, **kwargs):
         return np.random.rand(self.n)
 
 class layer():
