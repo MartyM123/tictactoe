@@ -27,6 +27,14 @@ def get_max_exc(a : np.ndarray, exc=[]) -> int:
     b = np.ma.array(a, mask=m)
     return int(np.argmax(b))
 
+class random_model:
+    def __init__(self, n):
+        self.n = n
+    def __str__(self) -> str:
+        return f'random_model with {self.n} nodes'
+    def compute(self):
+        return np.random.rand(self.n)
+
 class layer():
     def __init__(self, n):
         self.n = n
@@ -51,7 +59,7 @@ class dense(layer):
         function sets weights and biases for this layer''' 
         self.is_mutateable=True
         self.n_before = n_before
-        self.weights = np.zeros((self.n, n_before))
+        self.weights = np.ones((self.n, n_before))
         self.biases = np.random.rand(self.n)/10
         self.activation_func = activation_func
     
@@ -193,21 +201,20 @@ def reproduce(parents, init_model:model, weighted_score:list) -> model:
     n=len(parents)
     for i_layer in range(len(init_model.layers)):
         if init_model.layers[i_layer].is_mutateable:
-            w=np.zeros(init_model.layers[i_layer].weights.shape)
-            b=np.zeros(init_model.layers[i_layer].biases.shape)
+            w=np.ones(init_model.layers[i_layer].weights.shape)
+            b=np.ones(init_model.layers[i_layer].biases.shape)
             for i,parent in enumerate(parents):
-                w=w+parent.layers[i_layer].weights*weighted_score[i]
-                b=b+parent.layers[i_layer].biases*weighted_score[i]
-            init_model.layers[i_layer].weights=w/n
-            init_model.layers[i_layer].biases=b/n
+                w=w*parent.layers[i_layer].weights*weighted_score[i]
+                b=b*parent.layers[i_layer].biases*weighted_score[i]
+            init_model.layers[i_layer].weights=w**(1/n)
+            init_model.layers[i_layer].biases=b*(1/n)
     return init_model
 
-
-
-def one_cycle(models:list)->list:
+def one_cycle(models:list, n_parent=2)->list:
     n=len(models)
     s = score(models)
-    parents=choose_parents(models, s, 5)
+    s+=0.001
+    parents=choose_parents(models, s/max(s), n_parent)
     models2=[]
     for i in range(n):
         Model = model()
