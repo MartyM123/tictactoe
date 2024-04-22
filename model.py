@@ -91,21 +91,6 @@ class model:
         for layer in self.layers:
             layer.mutate()
 
-    def reproduce(self, parents, include_self=False):
-        '''sets weights and biases of all mutateable layers to average of parents
-        if include_self is set to True one of parents is model its self'''
-        if include_self: parents.append(self)
-        n=len(parents)
-        for i_layer in range(len(self.layers)):
-            if self.layers[i_layer].is_mutateable:
-                w=np.zeros(self.layers[i_layer].weights.shape)
-                b=np.zeros(self.layers[i_layer].biases.shape)
-                for parent in parents:
-                    w=w+parent.layers[i_layer].weights
-                    b=b+parent.layers[i_layer].biases
-                self.layers[i_layer].weights=w/n
-                self.layers[i_layer].biases=b/n
-
 def load_model(name='save') -> model:
     with open(str(name)+'.pkl', 'rb') as load_file:
         return pickle.load(load_file)
@@ -203,17 +188,31 @@ def generate_random_models(n:int)->list:
         models.append(Model)
     return models
 
-def one_cycle(models:list)->list:
+def reproduce(parents, init_model:model, weighted_score:list) -> model:
+    '''sets weights and biases of all mutateable layers to average of parents'''
+    n=len(parents)
+    for i_layer in range(len(init_model.layers)):
+        if init_model.layers[i_layer].is_mutateable:
+            w=np.zeros(init_model.layers[i_layer].weights.shape)
+            b=np.zeros(init_model.layers[i_layer].biases.shape)
+            for i,parent in enumerate(parents):
+                w=w+parent.layers[i_layer].weights*weighted_score[i]
+                b=b+parent.layers[i_layer].biases*weighted_score[i]
+            init_model.layers[i_layer].weights=w/n
+            init_model.layers[i_layer].biases=b/n
+    return init_model
 
+
+
+def one_cycle(models:list)->list:
     n=len(models)
     s = score(models)
-    parents=choose_parents(models, s)
+    parents=choose_parents(models, s, 5)
     models2=[]
     for i in range(n):
         Model = model()
         Model.layers = [layer(9), dense(9)]
         Model.compile()
-        Model.reproduce(parents)
-        Model.mutate()
+        Model= reproduce(parents, Model, s)
         models2.append(Model)
     return models2
