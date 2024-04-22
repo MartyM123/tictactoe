@@ -39,7 +39,7 @@ class layer():
         pass
 
     def compute(self, input : np.ndarray) -> np.ndarray:
-        return input
+        return sigmoid(input)
     
     def mutate(self):
         pass
@@ -56,7 +56,7 @@ class dense(layer):
         self.activation_func = activation_func
     
     def compute(self, input) -> np.ndarray:
-        computed = np.sum(input*self.weights, axis=1) + self.biases
+        computed = np.sum(input*self.weights, axis=1)# + self.biases
         return self.activation_func(computed)
     
     def to_json(self):
