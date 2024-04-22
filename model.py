@@ -4,6 +4,7 @@ import pickle
 import math
 
 def sigmoid(x):
+  ''' vrátí hodnotu od 0 do 1 '''
   return 1 / (1 + np.exp(-x))
 
 def plain(x):
@@ -62,8 +63,9 @@ class dense(layer):
         return json.dumps(self)
     
     def mutate(self):
-        '''mutation of weights'''
+        '''mutation of weights and biases by a mean'''
         self.weights = add_random_n_places(self.weights, 5)
+        self.biases = add_random_n_places(self.biases, 3)
 class model:
     def __init__(self, layers=[]):
         self.layers=layers
@@ -122,7 +124,7 @@ def is_winner(board:np.ndarray)->bool:
         return True
     return False
 
-def is_legal(board:np.ndarray, i:int):
+def is_legal(board:np.ndarray, i:int) -> bool:
     '''Check if move to i index is legal on board'''
     if board[i]==0:
         return True
@@ -162,10 +164,14 @@ def fight(model1:model, model2:model, show=False)->list:
                 if show: print(board.reshape((3,3))*flip)
                 return [0,0]
             #flip the board
+            if show:
+                print('palyer: '+str(flip))
+                print(board.reshape((3,3))*flip)
+                print()
             board*=-1
             flip*=-1
 
-def score(a:list)->list:
+def score(models:list)->list:
     '''return the overall score of each model'''
     table=np.zeros((len(models), len(models)))
     for i,model1 in enumerate(models):
@@ -181,24 +187,33 @@ def score(a:list)->list:
 
     return np.sum(table, axis=1)
 
-def choose_parents(models:list, score:list)->list:
+def choose_parents(models:list, score:list, n=2)->list:
     '''choose two parents with gratest score and return them in list'''
-    zipped_sorted = sorted(zip(models,score), key=lambda x:x[1], reverse=True)[:2]
+    zipped_sorted = sorted(zip(models,score), key=lambda x:x[1], reverse=True)[:n]
     return [a for a,b in zipped_sorted]
         
+def generate_random_models(n:int)->list:
+    '''generate random models'''
+    models=[]
+    for i in range(n):
+        Model = model()
+        Model.layers = [layer(9), dense(9)]
+        Model.compile()
+        Model.mutate()
+        models.append(Model)
+    return models
 
-models=[]
+def one_cycle(models:list)->list:
 
-for i in range(10):
-    Model = model()
-    Model.layers = [layer(9), dense(9)]
-    Model.compile()
-    Model.mutate()
-    models.append(Model)
-
-m=model()
-m.layers=[layer(9), dense(9)]
-m.compile()
-
-m.reproduce(models)
-
+    n=len(models)
+    s = score(models)
+    parents=choose_parents(models, s)
+    models2=[]
+    for i in range(n):
+        Model = model()
+        Model.layers = [layer(9), dense(9)]
+        Model.compile()
+        Model.reproduce(parents)
+        Model.mutate()
+        models2.append(Model)
+    return models2
