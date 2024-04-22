@@ -29,6 +29,7 @@ def get_max_exc(a : np.ndarray, exc=[]) -> int:
 class layer():
     def __init__(self, n):
         self.n = n
+        self.is_mutateable = False
 
     def __str__(self) -> str:
         return f'layer with {self.n} nodes'
@@ -47,6 +48,7 @@ class dense(layer):
         '''
         n_before the size of input or the size of output of previous layer
         function sets weights and biases for this layer''' 
+        self.is_mutateable=True
         self.n_before = n_before
         self.weights = np.zeros((self.n, n_before))
         self.biases = np.random.rand(self.n)/10
@@ -86,6 +88,21 @@ class model:
     def mutate(self):
         for layer in self.layers:
             layer.mutate()
+
+    def reproduce(self, parents, include_self=False):
+        '''sets weights and biases of all mutateable layers to average of parents
+        if include_self is set to True one of parents is model its self'''
+        if include_self: parents.append(self)
+        n=len(parents)
+        for i_layer in range(len(self.layers)):
+            if self.layers[i_layer].is_mutateable:
+                w=np.zeros(self.layers[i_layer].weights.shape)
+                b=np.zeros(self.layers[i_layer].biases.shape)
+                for parent in parents:
+                    w=w+parent.layers[i_layer].weights
+                    b=b+parent.layers[i_layer].biases
+                self.layers[i_layer].weights=w/n
+                self.layers[i_layer].biases=b/n
 
 def load_model(name='save') -> model:
     with open(str(name)+'.pkl', 'rb') as load_file:
@@ -148,15 +165,40 @@ def fight(model1:model, model2:model, show=False)->list:
             board*=-1
             flip*=-1
 
-model1 = model()
-model1.layers = [layer(9), dense(9)]
-model1.compile()
-model1.mutate()
+def score(a:list)->list:
+    '''return the overall score of each model'''
+    table=np.zeros((len(models), len(models)))
+    for i,model1 in enumerate(models):
+        for j, model2 in enumerate(models[i+1:]):
+            j+=i+1
+            res=fight(model1, model2)
+            table[i][j]+=res[0]
+            table[j][i]+=res[1]
 
-model2 = model()
-model2.layers = [layer(9), dense(9)]
-model2.compile()
-model2.mutate()
+            res=fight(model2, model1)
+            table[i][j]+=res[0]
+            table[j][i]+=res[1]
 
-print(fight(model1, model2, True))
-print()
+    return np.sum(table, axis=1)
+
+def choose_parents(models:list, score:list)->list:
+    '''choose two parents with gratest score and return them in list'''
+    zipped_sorted = sorted(zip(models,score), key=lambda x:x[1], reverse=True)[:2]
+    return [a for a,b in zipped_sorted]
+        
+
+models=[]
+
+for i in range(10):
+    Model = model()
+    Model.layers = [layer(9), dense(9)]
+    Model.compile()
+    Model.mutate()
+    models.append(Model)
+
+m=model()
+m.layers=[layer(9), dense(9)]
+m.compile()
+
+m.reproduce(models)
+
