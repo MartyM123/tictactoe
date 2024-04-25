@@ -180,6 +180,15 @@ def score(models:list)->list:
 
     return np.sum(table, axis=1)
 
+def score_with_random(models:list, n_games:10):
+    res=[]
+    for Model in models:
+        score = 0
+        for i in range(n_games):
+            score += fight(Model, random_model(9))[0]
+        res.append(score)
+    return res
+
 def choose_parents(models:list, score:list, n=2)->list:
     '''choose two parents with gratest score and return them in list'''
     zipped_sorted = sorted(zip(models,score), key=lambda x:x[1], reverse=True)[:n]
