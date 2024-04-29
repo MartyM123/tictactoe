@@ -81,6 +81,9 @@ class model:
     def __str__(self) -> str:
         return str([layer.__str__() for layer in self.layers])
 
+    def __copy__(self):
+        return model(self.layers)
+
     def compute(self, input : np.ndarray) -> np.ndarray:
         output = input
         for layer in self.layers:
@@ -161,7 +164,7 @@ def fight(model1:model, model2:model, show=False)->list:
                 print('palyer: '+str(flip))
                 print(board.reshape((3,3))*flip)
                 print()
-            board*=-1
+def score(models:list)->np.ndarray:
             flip*=-1
 
 def score(models:list)->list:
@@ -177,17 +180,21 @@ def score(models:list)->list:
             res=fight(model2, model1)
             table[i][j]+=res[0]
             table[j][i]+=res[1]
-
+def score_with_random(models:list, n_games=10)->np.ndarray:
     return np.sum(table, axis=1)
 
 def score_with_random(models:list, n_games:10):
     res=[]
     for Model in models:
         score = 0
-        for i in range(n_games):
+    return np.array(res)
             score += fight(Model, random_model(9))[0]
         res.append(score)
     return res
+    if max(score)==0:
+        score=score/(max(score)+0.0001)
+    else:
+        score=score/max(score)
 
 def choose_parents(models:list, score:list, n=2)->list:
     '''choose two parents with gratest score and return them in list'''
@@ -206,8 +213,8 @@ def generate_random_models(n:int)->list:
     return models
 
 def reproduce(parents, init_model:model, weighted_score:list) -> model:
-    '''sets weights and biases of all mutateable layers to average of parents'''
-    n=len(parents)
+                w=w*parent.layers[i_layer].weights
+                b=b*parent.layers[i_layer].biases
     for i_layer in range(len(init_model.layers)):
         if init_model.layers[i_layer].is_mutateable:
             w=np.ones(init_model.layers[i_layer].weights.shape)
