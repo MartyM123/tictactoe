@@ -1,6 +1,3 @@
-import time
-import sys
-
 class counter():
     def __init__(self, max=0):
         self.counter = 0
