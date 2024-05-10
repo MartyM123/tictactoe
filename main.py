@@ -1,3 +1,10 @@
-from tictactoe.__init__ import *
-np.array([1, 2, 3, 4])
-print('done')
+import model
+
+m = model.model([model.layer(9), model.dense(9)])
+
+m.compile()
+
+rm = model.randomModel(9)
+
+model.fight(m, rm)
+
