@@ -164,7 +164,7 @@ def fight(model1:model, model2:model, show=False)->list:
             board*=-1
             flip*=-1
 
-def score(models:list)->list:
+def score(models:list)->np.ndarray:
     '''return the overall score of each model'''
     table=np.zeros((len(models), len(models)))
     for i,model1 in enumerate(models):
