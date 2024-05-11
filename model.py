@@ -28,7 +28,7 @@ def get_max_exc(a : np.ndarray, exc=[]) -> int:
     return int(np.argmax(b))
 
 class random_model:
-    def __init__(self, n):
+    def __init__(self, n:int):
         self.n = n
     def __str__(self) -> str:
         return f'random_model with {self.n} nodes'
@@ -179,6 +179,29 @@ def score(models:list)->np.ndarray:
             table[j][i]+=res[1]
 
     return np.sum(table, axis=1)
+
+def score_against_random(models, n_rounds=10)->np.ndarray:
+    """
+    Scores models against random player. Each round contains 2 games one for first turn and second for second turn.
+
+    Parameters:
+    - models (list of model): list of models to score against random player
+    - n_rounds (int): number of games to play against random player, default is 10
+
+    Returns:
+    - 1D np.ndarray of scores (list of int): list of scores of each model against random player
+    """
+    
+    rm=random_model(9)
+    res=[]
+    for m in models:
+        count=0
+        for i in range(n_rounds):
+            count+=fight(m, rm)[0]
+        for i in range(n_rounds):
+            count+=fight(rm, m)[1]
+        res.append(count)
+    return res
 
 def choose_parents(models:list, score:list, n=2)->list:
     '''choose two parents with gratest score and return them in list'''
