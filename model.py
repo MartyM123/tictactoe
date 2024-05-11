@@ -208,12 +208,12 @@ def choose_parents(models:list, score:list, n=2)->list:
     zipped_sorted = sorted(zip(models,score), key=lambda x:x[1], reverse=True)[:n]
     return [a for a,b in zipped_sorted]
         
-def generate_random_models(n:int)->list:
+def generate_random_models(n:int, layers=[layer(9), dense(9)])->list:
     '''generate random models'''
     models=[]
     for i in range(n):
         Model = model()
-        Model.layers = [layer(9), dense(9)]
+        Model.layers = layers
         Model.compile()
         Model.mutate()
         models.append(Model)
