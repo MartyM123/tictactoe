@@ -203,10 +203,12 @@ def score_against_random(models, n_rounds=10)->np.ndarray:
         res.append(count)
     return res
 
-def choose_parents(models:list, score:list, n=2)->list:
-    '''choose two parents with gratest score and return them in list'''
+def choose_parents(models:list, score:list, n=2, want_score=False)->list:
+    '''choose n parents with gratest score and return them in list
+    if want_score is set to True returns (parents:list, score:np.ndarray)'''
     zipped_sorted = sorted(zip(models,score), key=lambda x:x[1], reverse=True)[:n]
-    return [a for a,b in zipped_sorted]
+    if not want_score: return [a for a,b in zipped_sorted]
+    return ([a for a,b in zipped_sorted], np.array([b for a,b in zipped_sorted]))
         
 def generate_random_models(n:int, layers=[layer(9), dense(9)])->list:
     '''generate random models'''
