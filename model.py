@@ -10,6 +10,9 @@ def sigmoid(x):
 def plain(x):
     return x
 
+def scale(l:list):
+    return l/max(l)
+
 def add_random_n_places(a : np.ndarray, n : int) -> np.ndarray:
     '''add random values to random n elements'''
     out = a.astype(float)
@@ -210,6 +213,13 @@ def choose_parents(models:list, score:list, n=2, want_score=False)->list:
     if not want_score: return [a for a,b in zipped_sorted]
     return ([a for a,b in zipped_sorted], np.array([b for a,b in zipped_sorted]))
         
+def make_chunks(l, n):
+    '''split list l into list of n lists'''
+    res=[]
+    for i in range(0, n):
+        res.append(l[i::n])
+    return res
+
 def generate_random_models(n:int, layers=[layer(9), dense(9)])->list:
     '''generate random models'''
     models=[]
@@ -221,7 +231,7 @@ def generate_random_models(n:int, layers=[layer(9), dense(9)])->list:
         models.append(Model)
     return models
 
-def reproduce(parents, init_model:model, weighted_score:list) -> model:
+def reproduce(parents:list, init_model:model, weighted_score:list) -> model:
     '''sets weights and biases of all mutateable layers to average of parents'''
     n=len(parents)
     for i_layer in range(len(init_model.layers)):
@@ -229,8 +239,8 @@ def reproduce(parents, init_model:model, weighted_score:list) -> model:
             w=np.ones(init_model.layers[i_layer].weights.shape)
             b=np.ones(init_model.layers[i_layer].biases.shape)
             for i,parent in enumerate(parents):
-                w=w*parent.layers[i_layer].weights*weighted_score[i]
-                b=b*parent.layers[i_layer].biases*weighted_score[i]
+                w=w*parent.layers[i_layer].weights
+                b=b*parent.layers[i_layer].biases
             init_model.layers[i_layer].weights=w**(1/n)
             init_model.layers[i_layer].biases=b*(1/n)
     return init_model
