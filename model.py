@@ -258,3 +258,20 @@ def one_cycle(models:list, n_parent=2)->list:
         Model= reproduce(parents, Model, s)
         models2.append(Model)
     return models2
+
+def array_crossover(parent1, parent2, min_crossovers=1, max_crossovers=5):
+    offspring1 = np.copy(parent1)
+    offspring2 = np.copy(parent2)
+    
+    num_crossovers = random.randint(min_crossovers, max_crossovers)
+    
+    for i in range(num_crossovers):
+        crossover_point = random.randint(1, len(parent1) - 1)
+        
+        # Perform crossover
+        new_offspring1 = np.concatenate((offspring1[:crossover_point], offspring2[crossover_point:]))
+        new_offspring2 = np.concatenate((offspring2[:crossover_point], offspring1[crossover_point:]))
+        
+        offspring1, offspring2 = new_offspring1, new_offspring2
+    
+    return offspring1, offspring2
