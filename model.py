@@ -2,6 +2,7 @@ import numpy as np
 import json
 import pickle
 import math
+import random
 
 def sigmoid(x):
   ''' vrátí hodnotu od 0 do 1 '''
@@ -220,16 +221,6 @@ def make_chunks(l, n):
         res.append(l[i::n])
     return res
 
-def generate_random_models(n:int, layers=[layer(9), dense(9)])->list:
-    '''generate random models'''
-    models=[]
-    for i in range(n):
-        Model = model()
-        Model.layers = layers
-        Model.compile()
-        Model.mutate()
-        models.append(Model)
-    return models
 
 def reproduce(parents:list, init_model:model, weighted_score:list) -> model:
     '''sets weights and biases of all mutateable layers to average of parents'''
