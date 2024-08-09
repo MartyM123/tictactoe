@@ -12,6 +12,19 @@ model = Model()
 
 kivy.require('2.3.0')
 
+def is_full(board):
+    if 0 not in board:
+        return True
+    return False
+
+def is_winner(board):
+    n=3
+    res=(np.sum(board,axis=0), np.sum(board,axis=1), np.trace(board), np.trace(board[::-1]))
+    res=np.hstack(res)
+    if -n in res in res:
+        return True
+    return False
+
 class MyApp(App):
     def build(self):
         self.ids={}
@@ -28,12 +41,34 @@ class MyApp(App):
                 self.ids[f"button_{r}_{c}"]=button
                 layout.add_widget(button)
         return layout
+    
+    def on_lose(self):
+        print('you lose')
+    
+    def on_win(self):
+        print('you won')
+    
+    def on_draw(self):
+        print('draw')
 
     def on_button_press(self, instance):
+        if instance.text != '':
+            print('title already taken')
+            return None
         instance.text = 'x'
         self.titles[instance.r,instance.c]=-1
-        self.robot_play()
         print(self.titles)
+        if is_winner(self.titles):
+            self.on_win()
+        elif is_winner(self.titles*-1):
+            self.on_lose()
+        elif is_full(self.titles):
+            self.on_draw()
+        else:
+            self.robot_play()
+            print(self.titles)
+            if is_winner(self.titles*-1):
+                self.on_lose()
 
     def robot_play(self):
         x_y=model.play(self.titles)
