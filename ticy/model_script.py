@@ -45,10 +45,13 @@ def check_diagonal(board):
 # %%
 def first_part(board):
     if check_diagonal(board):
+        print("first, check_diagonal")
         return check_diagonal(board)
     if check_horizontal(board):
+        print("first, check_horizontal")
         return check_horizontal(board)
     if check_vertical(board):
+        print("first, check_vertical")
         return check_vertical(board)
 
 # %% [markdown]
@@ -82,10 +85,13 @@ def check_block_diagonal(board):
 # %%
 def second_part(board):
     if check_block_diagonal(board):
+        print("second, check_block_diagonal")
         return check_block_diagonal(board)
     if check_block_horizontal(board):
+        print("second, check_block_horizontal")
         return check_block_horizontal(board)
     if check_block_vertical(board):
+        print("second, check_block_vertical")
         return check_block_vertical(board)
 
 # %% [markdown]
@@ -121,7 +127,8 @@ class Model:
         if second_part(board):
             return second_part(board)
         else:
-            return np.where(board==0)[0][0], np.where(board==0)[1][0]
+            print('third')
+            return np.where(board==0)[1][0], np.where(board==0)[0][0]
             
 
 
