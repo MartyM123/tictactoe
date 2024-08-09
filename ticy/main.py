@@ -14,6 +14,7 @@ kivy.require('2.3.0')
 
 class MyApp(App):
     def build(self):
+        self.ids={}
         self.titles = np.zeros((3,3))
         # Create a layout
         layout = GridLayout(cols=3, rows=3)
@@ -24,8 +25,8 @@ class MyApp(App):
                 button.r=r
                 button.c=c
                 button.bind(on_press=self.on_button_press)
+                self.ids[f"button_{r}_{c}"]=button
                 layout.add_widget(button)
-
         return layout
 
     def on_button_press(self, instance):
@@ -37,7 +38,7 @@ class MyApp(App):
     def robot_play(self):
         x_y=model.play(self.titles)
         self.titles[x_y[1], x_y[0]]=1
-        self.titles[x_y[1], x_y[0]].text = 'o'
+        self.ids[f"button_{x_y[1]}_{x_y[0]}"].text="o"
 
 if __name__ == '__main__':
     MyApp().run()

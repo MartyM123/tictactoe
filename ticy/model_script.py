@@ -98,6 +98,14 @@ def load_model(name='model'):
         return pickle.load(load_file)
 
 # %%
+def print_output(func):
+    def wrap(*args, **kwargs):
+        result = func(*args, **kwargs)
+        print(result)
+        return result
+    return wrap
+
+# %%
 class Model:
     def __init__(self, name='model'):
         self.name=name
@@ -105,7 +113,8 @@ class Model:
     def save(self, name):
         with open(str(name)+'.pkl', 'wb') as save_file:
             pickle.dump(self, save_file)
-        
+    
+    @print_output
     def play(self, board):
         if first_part(board):
             return first_part(board)
