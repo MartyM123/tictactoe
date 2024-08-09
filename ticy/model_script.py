@@ -10,7 +10,7 @@ import pickle
 # %% [markdown]
 # ### General model knowledge
 # model will get 2d numpy array where 1 means bots marks, 0 empty title and -1 the opponents title. For now consider only boards 3x3.
-# As the output of the model should be coordinates where to play.
+# As the output of the model should return row, column where to play.
 
 # %% [markdown]
 # ### Brain of model
@@ -112,7 +112,7 @@ class Model:
         if second_part(board):
             return second_part(board)
         else:
-            return np.where(board==0)[1][0], np.where(board==0)[0][0]
+            return np.where(board==0)[0][0], np.where(board==0)[1][0]
             
 
 
